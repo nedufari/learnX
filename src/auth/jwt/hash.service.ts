@@ -1,15 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import * as bcrypt from 'bcrypt'
+import { Observable } from "rxjs";
 
 @Injectable()
 export class HashService{
     constructor (){}
 
-    async comparepassword(pasword:string, hash:string):Promise<Boolean>{
+     comparepassword(pasword:string, hash:string):Observable<Boolean>{
         return bcrypt.compare(pasword,hash)
     }
 
-    async hashpasswrod(password:string):Promise<string>{
+     hashpasswrod(password:string):Observable<string>{
         return bcrypt.hash(password,10)
     }
 }

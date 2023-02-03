@@ -5,21 +5,27 @@ import { JwtStrategy } from './jwt/jwt.strategy.service';
 import { JwtGuard } from './guards/jwtguard';
 import { UsersModule } from '../users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../Entity/users.entity';
+import { UserEntity } from '../Entity/users.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { HashService } from './jwt/hash.service';
 import { UsersService } from '../users/users.service';
 import { UserRepository } from '../users/user.repository';
-import { Lecturers } from '../Entity/lecturer.entity';
-import { Files } from '../Entity/files.entity';
+import { Feeds } from '../Entity/feeds.entity';
+import { RolesGuard } from './guards/roleguard';
+
 
 @Module({
-  providers: [AuthService,JwtStrategy,JwtGuard, HashService,UsersService],
+  providers: [AuthService,JwtStrategy,JwtGuard, HashService,UsersService,RolesGuard],
   controllers: [AuthController],
   imports:[UsersModule,
-    TypeOrmModule.forFeature([User,Lecturers,Files]),
-  JwtModule.register({}),
+  TypeOrmModule.forFeature([UserEntity,Feeds]),
+  JwtModule.registerAsync({
+    useFactory:()=>({
+      secret:process.env.SECRETKEY,
+      signOptions:{expiresIn:'3600s'}
+    })
+  }),
 
 ],
 exports:[AuthService, HashService]
