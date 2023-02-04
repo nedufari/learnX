@@ -12,6 +12,7 @@ export class User{
 
     @IsString()
     password?:string
+    imagePath?:string
     role:Roles
     feedpost?:FeedPost[]   //the entire interface of the feeds to map the post to the user when posted 
 }

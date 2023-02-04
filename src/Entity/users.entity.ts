@@ -6,7 +6,7 @@ import { Roles } from "./roles.enum";
 export class UserEntity{
 
     @PrimaryGeneratedColumn()
-    id :number
+    id:number
 
     @Column({type:"timestamp with time zone",default:()=>'CURRENT_TIMESTAMP'})
     createdAt:Date
@@ -17,6 +17,10 @@ export class UserEntity{
 
     @Column({select:false})
     password:string
+
+    
+    @Column({nullable:true})
+    imagePath:string
 
 
     @Column()

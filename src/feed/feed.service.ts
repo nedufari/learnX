@@ -13,12 +13,11 @@ export class FeedService {
 
     }
 
-    createFeed( user:User,feeds:FeedPost):Observable<FeedPost>{ //user entity (db) not interface 
-        //feeds.author  =user
+    createFeed( user:User,feeds:FeedPost):Observable<FeedPost>{
         feeds.author =user
         return from (this.feedsrepository.save(feeds))
     }
-w
+
     findallfeeds():Observable<FeedPost[]>{
          return from (this.feedsrepository.find())
     }

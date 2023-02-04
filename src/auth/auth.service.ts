@@ -26,8 +26,8 @@ export class AuthService {
   }
 
 
-  signup(userinterace: User): Observable<User> {
-    const { firstname, lastname, email, password } = userinterace
+  signup(user: User): Observable<User> {
+    const { firstname, lastname, email, password } = user
     return this.hashpassword(password).pipe(
       switchMap((hashedPassword: string) => {
         return from(this.authrepository.save({ firstname, lastname, email, password: hashedPassword })).pipe(map((user: User) => {
