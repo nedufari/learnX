@@ -7,6 +7,8 @@ import { TypeormService } from './typeorm/typeorm.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MulterModule } from '@nestjs/platform-express';
 import { FeedModule } from './feed/feed.module';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from '../core/allexceptionfilter';
 
 @Module({
   imports: [
@@ -18,7 +20,7 @@ import { FeedModule } from './feed/feed.module';
   FeedModule]
   ,
     providers:[
-      TypeormService,
+      TypeormService, {provide: APP_FILTER, useClass:AllExceptionsFilter}
       
       ]
      

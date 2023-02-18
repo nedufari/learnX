@@ -18,7 +18,7 @@ export class RolesGuard implements CanActivate{
         ])
 
         if (!requiredRoles){
-            return true; //hat means it is authoroized to have access into that route if the guard is left empty or not given
+            return true; //that means it is authoroized to have access into that route if the guard is left empty or not given
         }
 
         const {user} =context.switchToHttp().getRequest(); //use object disconstruction to get the user from the request

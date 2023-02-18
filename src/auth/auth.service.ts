@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../Entity/users.entity';
 import { LoginDto } from './auth.dto';
@@ -7,7 +7,7 @@ import * as jwt from 'jsonwebtoken'
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './user.class';
-import { from, map, Observable, switchMap } from 'rxjs';
+import { from, map, Observable, switchMap,of, tap } from 'rxjs';
 import * as bcrypt from 'bcrypt'
 
 @Injectable()
@@ -26,36 +26,58 @@ export class AuthService {
   }
 
 
-  signup(user: User): Observable<User> {
-    const { firstname, lastname, email, password } = user
-    return this.hashpassword(password).pipe(
-      switchMap((hashedPassword: string) => {
-        return from(this.authrepository.save({ firstname, lastname, email, password: hashedPassword })).pipe(map((user: User) => {
-          delete user.password //thos wont return back the password to the user
-          return user
-        }))
-
-      }))
+  doesuserexist(email:string):Observable<boolean>{
+    return from (this.authrepository.findOne({where:{email}})).pipe(switchMap((user:User)=>{
+      return  of(!!user)
+    }))
   }
 
+
+  signup(user: User): Observable<User> {
+
+    const { firstname, lastname, email, password } = user
+
+    return this.doesuserexist(email).pipe(
+      tap((doesUserExist: boolean) => {
+        if (doesUserExist)
+          throw new HttpException(
+            'A user has already been created with this email address',
+            HttpStatus.BAD_REQUEST,
+          );
+      }),
+
+      switchMap(() =>{
+
+        return this.hashpassword(password).pipe(
+          switchMap((hashedPassword: string) => {
+            return from(this.authrepository.save({ firstname, lastname, email, password: hashedPassword })).pipe(map((user: User) => {
+              delete user.password //those wont return back the password to the user
+              return user
+            }))
+    
+          }))
+
+      }))
+    
+  
+    }
+
 //code to validate the user and compare the login details ie the emailand the password
-  validateUser(email: string, password: string): Observable<User> {
-    return from(this.authrepository.findOne({
-      where: { email },
-      select: ['id', 'firstname', 'lastname', 'email', 'password', 'role']
-    })).pipe(switchMap((user: User) =>
-      from(bcrypt.compare(password, user.password)).pipe(map((isValidPassword: boolean) => {
-        if (isValidPassword) {
-          delete user.password;
-          return user
+  validateUser(email:string, password:string):Observable<User>{
+    return from (this.authrepository.findOne({where:{email}, select:['id','firstname','lastname','email','password','role']})).pipe(
+      switchMap((user:User)=>{
+        if (!user){
+          //throw new HttpException('Not found', HttpStatus.NOT_FOUND)
+          throw new HttpException({status:  HttpStatus.NOT_FOUND,error:"invalid credentials "}, HttpStatus.NOT_FOUND)
         }
-      }
-      ))
-
-    ))
-
-
-
+        return from (bcrypt.compare(password,user.password)).pipe(map((isValidPassword:boolean)=>{
+          if (isValidPassword){
+            delete user.password
+            return user
+          }
+        }))
+      })
+    )
   }
 
   //login function for the 
